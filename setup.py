@@ -6,7 +6,7 @@ OPTIONS = {
     'argv_emulation': True,
     'plist': {
         'LSUIElement': True,
-        'CFBundleName': 'Bitcoin Price',
+        'CFBundleName': 'BitcoinPrice',
         'CFBundleDisplayName': 'Bitcoin Price',
         'CFBundleGetInfoString': "Bitcoin price in your menu bar",
         'CFBundleIdentifier': "com.github.bitcoin-price-menubar",

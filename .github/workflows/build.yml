@@ -35,13 +35,23 @@ jobs:
     
     - name: Create DMG
       run: |
-        if [ ! -d "dist/BitcoinPrice.app" ]; then
-          echo "BitcoinPrice.app not found in dist directory"
+        APP_PATH="dist/BitcoinPrice.app"
+        if [ ! -d "$APP_PATH" ]; then
+          echo "Looking for app in dist directory..."
           ls -la dist/
-          exit 1
+          # Try to find the app with a different name
+          FOUND_APP=$(find dist -name "*.app" -maxdepth 1 -type d)
+          if [ -n "$FOUND_APP" ]; then
+            echo "Found app at: $FOUND_APP"
+            mv "$FOUND_APP" "$APP_PATH"
+          else
+            echo "No .app bundle found in dist directory"
+            exit 1
+          fi
         fi
+        
         mkdir -p dist/dmg
-        cp -r dist/BitcoinPrice.app dist/dmg/
+        cp -r "$APP_PATH" dist/dmg/
         hdiutil create -volname "Bitcoin Price" -srcfolder dist/dmg -ov -format UDZO dist/BitcoinPrice.dmg
     
     - name: Create Release
