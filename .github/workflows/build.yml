@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: macos-latest
+    permissions:
+      contents: write
     
     steps:
     - uses: actions/checkout@v4
@@ -55,12 +57,24 @@ jobs:
         hdiutil create -volname "Bitcoin Price" -srcfolder dist/dmg -ov -format UDZO dist/BitcoinPrice.dmg
     
     - name: Create Release
-      id: create_release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          dist/BitcoinPrice.dmg
-        draft: false
-        prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Get the tag name
+        TAG_NAME=${GITHUB_REF#refs/tags/}
+        
+        # Create release notes
+        echo "Bitcoin Price Menu Bar App ${TAG_NAME}" > release_notes.md
+        echo "macOS application that displays Bitcoin price in your menu bar." >> release_notes.md
+        echo "" >> release_notes.md
+        echo "## Installation" >> release_notes.md
+        echo "1. Download BitcoinPrice.dmg" >> release_notes.md
+        echo "2. Open the DMG file" >> release_notes.md
+        echo "3. Drag BitcoinPrice to your Applications folder" >> release_notes.md
+        echo "4. Open BitcoinPrice from your Applications folder" >> release_notes.md
+        
+        # Create the release and upload the asset
+        gh release create "$TAG_NAME" \
+          --title "Bitcoin Price ${TAG_NAME}" \
+          --notes-file release_notes.md \
+          dist/BitcoinPrice.dmg
