@@ -15,15 +15,16 @@ OPTIONS = {
         'CFBundleVersion': '1.0.0',
         'CFBundleShortVersionString': '1.0.0',
     },
-    'packages': ['rumps', 'requests', 'Foundation', 'AppKit', 'objc'],
-    'includes': ['WebKit', 'Cocoa', 'Foundation', 'AppKit'],
-    'frameworks': ['Cocoa', 'Foundation', 'AppKit'],
-    'semi_standalone': True,
+    'packages': ['rumps', 'requests'],
+    'includes': ['WebKit'],
+    'frameworks': [],
+    'semi_standalone': False,
     'site_packages': True,
 }
 
 setup(
     app=APP,
+    name="Bitcoin Price",
     data_files=DATA_FILES,
     options={'py2app': OPTIONS},
     setup_requires=['py2app'],
