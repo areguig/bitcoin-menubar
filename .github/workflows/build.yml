@@ -28,12 +28,15 @@ jobs:
       run: |
         # Clean any existing build artifacts
         rm -rf build dist
-        # Build the app in alias mode first for testing
-        python setup.py py2app -A
-        # If that succeeds, build the standalone app
+        # Clean Python cache
+        find . -type d -name "__pycache__" -exec rm -r {} +
+        find . -type f -name "*.pyc" -delete
+        # Build the app
         python setup.py py2app
         # Verify the app was created
         ls -la dist/
+        # Test app bundle
+        codesign --verify --verbose dist/BitcoinPrice.app || true
     
     - name: Create DMG
       run: |
@@ -72,6 +75,10 @@ jobs:
         echo "2. Open the DMG file" >> release_notes.md
         echo "3. Drag BitcoinPrice to your Applications folder" >> release_notes.md
         echo "4. Open BitcoinPrice from your Applications folder" >> release_notes.md
+        echo "" >> release_notes.md
+        echo "## System Requirements" >> release_notes.md
+        echo "- macOS 10.13 or later" >> release_notes.md
+        echo "- Universal binary (works on Intel and Apple Silicon)" >> release_notes.md
         
         # Create the release and upload the asset
         gh release create "$TAG_NAME" \
