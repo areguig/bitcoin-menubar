@@ -23,6 +23,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install pyobjc-framework-Cocoa
     
     - name: Build app
       run: |
@@ -33,55 +34,16 @@ jobs:
         find . -type f -name "*.pyc" -delete
         # Build the app
         python setup.py py2app
-        # Verify the app was created
-        ls -la dist/
-        # Test app bundle
-        codesign --verify --verbose dist/BitcoinPrice.app || true
     
     - name: Create DMG
       run: |
-        APP_PATH="dist/BitcoinPrice.app"
-        if [ ! -d "$APP_PATH" ]; then
-          echo "Looking for app in dist directory..."
-          ls -la dist/
-          # Try to find the app with a different name
-          FOUND_APP=$(find dist -name "*.app" -maxdepth 1 -type d)
-          if [ -n "$FOUND_APP" ]; then
-            echo "Found app at: $FOUND_APP"
-            mv "$FOUND_APP" "$APP_PATH"
-          else
-            echo "No .app bundle found in dist directory"
-            exit 1
-          fi
-        fi
-        
-        mkdir -p dist/dmg
-        cp -r "$APP_PATH" dist/dmg/
-        hdiutil create -volname "Bitcoin Price" -srcfolder dist/dmg -ov -format UDZO dist/BitcoinPrice.dmg
+        hdiutil create -volname "Bitcoin Price" -srcfolder "dist/Bitcoin Price.app" -ov -format UDZO "dist/Bitcoin_Price.dmg"
     
-    - name: Create Release
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          dist/Bitcoin_Price.dmg
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        # Get the tag name
-        TAG_NAME=${GITHUB_REF#refs/tags/}
-        
-        # Create release notes
-        echo "Bitcoin Price Menu Bar App ${TAG_NAME}" > release_notes.md
-        echo "macOS application that displays Bitcoin price in your menu bar." >> release_notes.md
-        echo "" >> release_notes.md
-        echo "## Installation" >> release_notes.md
-        echo "1. Download BitcoinPrice.dmg" >> release_notes.md
-        echo "2. Open the DMG file" >> release_notes.md
-        echo "3. Drag BitcoinPrice to your Applications folder" >> release_notes.md
-        echo "4. Open BitcoinPrice from your Applications folder" >> release_notes.md
-        echo "" >> release_notes.md
-        echo "## System Requirements" >> release_notes.md
-        echo "- macOS 10.13 or later" >> release_notes.md
-        echo "- Universal binary (works on Intel and Apple Silicon)" >> release_notes.md
-        
-        # Create the release and upload the asset
-        gh release create "$TAG_NAME" \
-          --title "Bitcoin Price ${TAG_NAME}" \
-          --notes-file release_notes.md \
-          dist/BitcoinPrice.dmg
